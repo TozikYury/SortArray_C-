@@ -1,22 +1,24 @@
+#include <ctime>
 #include <iostream>
-#include <limits>
-using namespace std;
+#include <unistd.h>
 
-int main()
-{
+std::string gen_random(const int len) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    std::string tmp_s;
+    tmp_s.reserve(len);
 
-    int n, a;
-
-    while (!(cin >> n))
-    {
-
-        cin.clear();
-
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-
-        cout << "Некоректный ввод даных! Введите их ещё раз: ";
+    for (int i = 0; i < len; ++i) {
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
     }
-    a = n;
-    
-    cout << a << endl;
+
+    return tmp_s;
+}
+
+int main(int argc, char *argv[]) {
+    srand((unsigned)time(NULL) * getpid());
+    std::cout << gen_random(100) << "\n";
+    return 0;
 }
