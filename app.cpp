@@ -4,6 +4,8 @@
 
 using namespace std;
 
+static const int sizeArray = 100;
+
 string random_array(const int len)
 {
     static const char alphanum[] =
@@ -23,9 +25,11 @@ string random_array(const int len)
 
 int main(int argc, char *argv[])
 {
-    static const int sizeArray = 100;
-    srand((unsigned)time(NULL) * getpid());
+    char number(126);
 
+    srand((unsigned)time(NULL) * getpid());
+    cout << "Вывод исходного масива" << endl;
     cout << random_array(sizeArray) << "\n";
+    cout << "Char ="<< number << endl;
     return 0;
 }
