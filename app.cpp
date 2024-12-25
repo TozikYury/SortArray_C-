@@ -1,47 +1,98 @@
-#include<iostream>
-#include <math.h>
+#include <iostream>
+#include <vector>
+#include <random>
+#include <map>
+#include <algorithm>
 
+using namespace std;
 
-
-const int SIZE = 100;
-
-void fillArray(char* arr, char choice) {
-if (choice == '1') {
-std::cout << "Enter " << SIZE << " characters (only letters and digits): ";
-for (int i = 0; i < SIZE; ++i) {
-std::cin >> arr[i];
-}
-} else if (choice == '2') {
-char A, B;
-std::cout << "Enter range A and B: ";
-std::cin >> A >> B;
-for (int i = 0; i < SIZE; ++i) {
-arr[i] = rand() % (B - A + 1) + A;
-}
-}
+// Функция для печати массива
+void printArray(const vector<char>& arr, const string& msg) {
+    cout << msg;
+    for (char c : arr) {
+        cout << c << " ";
+    }
+    cout << endl;
 }
 
-void bubbleSort(char* arr, int size) {
-for (int i = 0; i < size - 1; ++i) {
-for (int j = 0; j < size - i - 1; ++j) {
-if (arr[j] > arr[j + 1]) {
-char temp = arr[j];
-arr[j] = arr[j + 1];
-arr[j + 1] = temp;
-}
-}
-}
+// Функция сортировки пузырьком с учетом частоты символов (по возрастанию)
+void bubbleSortByCount(vector<char>& arr, const map<char, int>& counts) {
+    int n = arr.size();
+    for (int i = 0; i < n - 1; ++i) {
+        for (int j = 0; j < n - i - 1; ++j) {
+            if (counts.at(arr[j]) > counts.at(arr[j+1])) {
+                swap(arr[j], arr[j+1]);
+            }
+        }
+    }
 }
 
-void countCharacters(char* arr) {
-int count[62] = {0}; // 26 letters + 10 digits = 36; 26 capital letters + 10 digits = 62
-for (int i = 0; i < SIZE; ++i) {
-if (arr[i] >= '0' && arr[i] <= '9') {
-count[arr[i] - '0']++;
-} else if (arr[i] >= 'A' && arr[i] <= 'Z') {
-count[arr[i] - 'A' + 10]++;
-} else if (arr[i] >= 'a' && arr[i] <= 'z') {
-count[arr[i] - 'a' + 36]++;
+int main() {
+    const int SIZE = 100;
+    vector<char> arr(SIZE);
+
+    int choice;
+    cout << "Выберите способ заполнения массива:\n";
+    cout << "1. Ввод с клавиатуры\n";
+    cout << "2. Случайные буквы и цифры\n";
+    cout << "Ваш выбор: ";
+    cin >> choice;
+
+    switch (choice) {
+        case 1: {
+            cout << "Введите " << SIZE << " символов (буквы латинского алфавита и цифры):\n";
+             for(int i = 0; i < SIZE; ++i)
+             {
+                 char input_char;
+                  cin >> input_char;
+                  if (!isalnum(input_char))
+                  {
+                      cout << "Некорректный символ. Введите латинскую букву или цифру." << endl;
+                      i--;
+                      continue;
+                  }
+                  arr[i] = input_char;
+
+             }
+            break;
+        }
+        case 2: {
+            random_device rd;
+            mt19937 gen(rd());
+            uniform_int_distribution<> distrib(0, 61); // 26 букв + 26 букв в верхнем регистре + 10 цифр
+
+            for (int i = 0; i < SIZE; ++i) {
+                int random_int = distrib(gen);
+                 if (random_int < 10)
+                     arr[i] = '0' + random_int;
+                else if(random_int < 36)
+                    arr[i] = 'a' + random_int - 10;
+                else
+                    arr[i] = 'A' + random_int - 36;
+            }
+            break;
+        }
+        default:
+            cerr << "Ошибка: Неверный выбор.\n";
+            return 1;
+    }
+
+    printArray(arr, "Исходный массив: ");
+
+    // Подсчет частоты символов
+    map<char, int> charCounts;
+    for (char c : arr) {
+        charCounts[c]++;
+    }
+
+    // Копируем исходный массив для сортировки
+    vector<char> sortedArr = arr;
+
+    // Сортировка массива на основе подсчета частот пузырьком
+    bubbleSortByCount(sortedArr, charCounts);
+
+    printArray(sortedArr, "Отсортированный массив: ");
+
+    return 0;
 }
-}
-}
+//g++ app.cpp -o array_sort скомпелировать файл 
