@@ -1,98 +1,165 @@
 #include <iostream>
 #include <vector>
-#include <random>
-#include <map>
 #include <algorithm>
+#include <random>
+#include <cctype>
+#include <chrono>
+#include <map>
 
 using namespace std;
+using namespace std::chrono;
 
-// Функция для печати массива
-void printArray(const vector<char>& arr, const string& msg) {
-    cout << msg;
-    for (char c : arr) {
-        cout << c << " ";
-    }
-    cout << endl;
+// Структура для хранения элемента и его количества (для чисел и символов)
+struct ElementCount {
+    char element; // Используем char, т.к. нам важен символ или его ASCII код для числа
+    int count;
+    bool isNumber; //флаг для проверки является ли данный элемент числом или нет
+};
+
+
+bool compareElementCounts(const ElementCount& a, const ElementCount& b) {
+    return a.count < b.count;
 }
 
-// Функция сортировки пузырьком с учетом частоты символов (по возрастанию)
-void bubbleSortByCount(vector<char>& arr, const map<char, int>& counts) {
+// Функция сортировки пузырьком
+void bubbleSort(vector<ElementCount>& arr) {
     int n = arr.size();
     for (int i = 0; i < n - 1; ++i) {
         for (int j = 0; j < n - i - 1; ++j) {
-            if (counts.at(arr[j]) > counts.at(arr[j+1])) {
-                swap(arr[j], arr[j+1]);
+            if (arr[j].count > arr[j + 1].count) {
+                swap(arr[j], arr[j + 1]);
             }
         }
     }
 }
 
-int main() {
-    const int SIZE = 100;
-    vector<char> arr(SIZE);
+// Функция сортировки чет-нечет
+void oddEvenSort(vector<ElementCount>& arr) {
+    int n = arr.size();
+    bool isSorted = false;
 
-    int choice;
-    cout << "Выберите способ заполнения массива:\n";
-    cout << "1. Ввод с клавиатуры\n";
-    cout << "2. Случайные буквы и цифры\n";
-    cout << "Ваш выбор: ";
+    while (!isSorted) {
+        isSorted = true;
+
+        // Четная фаза
+        for (int i = 0; i < n - 1; i += 2) {
+            if (arr[i].count > arr[i + 1].count) {
+                swap(arr[i], arr[i + 1]);
+                isSorted = false;
+            }
+        }
+
+        // Нечетная фаза
+        for (int i = 1; i < n - 1; i += 2) {
+            if (arr[i].count > arr[i + 1].count) {
+                swap(arr[i], arr[i + 1]);
+                isSorted = false;
+            }
+        }
+    }
+}
+
+
+
+int main() {
+    const int arrSize = 100;
+    char arr[arrSize];
+    char choice, sortChoice;
+
+    cout << "Заполнить массив: (k - клавиатура, r - случайные числа): ";
     cin >> choice;
 
-    switch (choice) {
-        case 1: {
-            cout << "Введите " << SIZE << " символов (буквы латинского алфавита и цифры):\n";
-             for(int i = 0; i < SIZE; ++i)
-             {
-                 char input_char;
-                  cin >> input_char;
-                  if (!isalnum(input_char))
-                  {
-                      cout << "Некорректный символ. Введите латинскую букву или цифру." << endl;
-                      i--;
-                      continue;
-                  }
-                  arr[i] = input_char;
-
-             }
-            break;
+    if (choice == 'k') {
+        cout << "Введите " << arrSize << " элементов (буквы и целые числа) через пробел: ";
+        for (int i = 0; i < arrSize; ++i) {
+            cin >> arr[i];
+              // Проверяем, является ли символ буквой или цифрой
+            if (!isalnum(arr[i])) {
+                cout << "Некорректный символ. Введите только буквы или целые числа" << endl;
+                return 1;
+              }
         }
-        case 2: {
-            random_device rd;
-            mt19937 gen(rd());
-            uniform_int_distribution<> distrib(0, 61); // 26 букв + 26 букв в верхнем регистре + 10 цифр
-
-            for (int i = 0; i < SIZE; ++i) {
-                int random_int = distrib(gen);
-                 if (random_int < 10)
-                     arr[i] = '0' + random_int;
-                else if(random_int < 36)
-                    arr[i] = 'a' + random_int - 10;
-                else
-                    arr[i] = 'A' + random_int - 36;
-            }
-            break;
-        }
-        default:
-            cerr << "Ошибка: Неверный выбор.\n";
+    } else if (choice == 'r') {
+        int a, b;
+        cout << "Введите диапазон случайных чисел (A B): ";
+        cin >> a >> b;
+          if (a > b) {
+            cout << "Некорректный диапазон. A должно быть меньше или равно B." << endl;
             return 1;
+        }
+
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<> distrib(a, b);
+
+        for (int i = 0; i < arrSize; ++i) {
+              // Генерируем случайный выбор (буква или число)
+            if (distrib(gen) % 2 == 0) {
+                 arr[i] = (char) (distrib(gen) % 26 + 'a') ;// Случайная буква от a до z
+            } else {
+                 arr[i] = (char) (distrib(gen) % 10 + '0') ; // Случайная цифра от 0 до 9
+            }
+        }
+    } else {
+        cout << "Неверный выбор." << endl;
+        return 1;
     }
 
-    printArray(arr, "Исходный массив: ");
 
-    // Подсчет частоты символов
-    map<char, int> charCounts;
-    for (char c : arr) {
-        charCounts[c]++;
+    cout << "Исходный массив: ";
+    for (int i = 0; i < arrSize; ++i) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+
+
+     vector<ElementCount> elementCounts;
+     for (char el : arr) {
+       bool found = false;
+       for(auto& ec: elementCounts) {
+         if(ec.element == el) {
+           ec.count++;
+           found = true;
+           break;
+         }
+       }
+       if(!found) {
+         elementCounts.push_back({el, 1, isdigit(el)}); //записываем является ли это числом
+       }
+     }
+
+    cout << "Выбрать алгоритм сортировки: (b - пузырьком, o - чет-нечет): ";
+    cin >> sortChoice;
+
+    auto start = high_resolution_clock::now(); // Замер времени
+
+    if (sortChoice == 'b') {
+        bubbleSort(elementCounts);
+    } else if (sortChoice == 'o') {
+        oddEvenSort(elementCounts);
+    } else {
+        cout << "Неверный выбор сортировки." << endl;
+        return 1;
     }
 
-    // Копируем исходный массив для сортировки
-    vector<char> sortedArr = arr;
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
 
-    // Сортировка массива на основе подсчета частот пузырьком
-    bubbleSortByCount(sortedArr, charCounts);
 
-    printArray(sortedArr, "Отсортированный массив: ");
+    cout << "Массив после обработки (отсортированные символы и целые числа): ";
+    for (const auto& ec : elementCounts) {
+      for(int i = 0; i < ec.count; i++) {
+         if(ec.isNumber) {
+           cout << (int)(ec.element - '0');
+         } else {
+           cout << ec.element;
+         }
+      }
+    }
+    cout << endl;
+
+
+    cout << "Время работы сортировки: " << duration.count() << " микросекунд" << endl;
 
     return 0;
 }
-//g++ app.cpp -o array_sort скомпелировать файл 
